@@ -1,87 +1,34 @@
-import math
+import time
 
-import pyodbc
-import pandas as pd
-import openpyxl
+import mp as mp
 
-# Database configuration
-from pandas import ExcelWriter
+from Country import Country
+from CreateHotel import CreateHotel
+from Destination import Destination
+from Facility import Facility
+from Hotel import Hotel
+from RoomType import RoomType
 
-server = 'localhost'
-database = 'act'
-username = 'SA'
-password = 'test1234*'
-conn = pyodbc.connect(
-    'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password)
+if __name__ == '__main__':
+    #print("Number of processors: ", mp.cpu_count())
+    start_time = time.time()
+    Country().run()
+    Destination().run()
+    Facility().run()
 
-connAdaptor = pyodbc.connect(
-    'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server + ';DATABASE=adaptor' + ';UID=' + username + ';PWD=' + password)
+    Hotel().run()
+    all_hotel_feed_df = RoomType().run()
+    CreateHotel().run(all_hotel_feed_df)
+    duration = time.time() - start_time
+    print(f"Completed in {duration} seconds")
+    print("Bye...")
 
-# File configuration
-country_mapping_result_path = 'country_mapping_result.csv'
-destination_mapping_result_path = 'destination_mapping_result.csv'
-agoda_hotel_en_path = 'agoda_hotel_en'
-agoda_wholesale_id = 2
+    exit()
 
-print("Welcome to the show!")
-
-# cursor = conn.cursor()
-# cursor.execute('SELECT * FROM Country')
-# for row in cursor:
-#     print('row = %r' % (row,))
-
-SQL_Query = pd.read_sql_query(
-    '''select
-CountryID ACTCountryID,
-ISO2,
-ISO3,
-TitleEn,
-TitleTh,
-Slug,
-2 as WholeSaleId
-from Country''', conn)
-
-# dataframeCountryACT = pd.DataFrame(SQL_Query, columns=['ACTCountryID', 'ISO2', 'ISO3', 'TitleEn', 'TitleTh', 'Slug',
-#                                                        'WholeSaleId'])
-# print(dataframeCountryACT)
-
-dataframeMappingCountry = pd.read_csv(country_mapping_result_path, encoding='utf-8')
-
-# dataframeMappingDestination = pd.read_csv(destination_mapping_result_path, encoding='utf-8')
-# print(dataframeMappingDestination.head())
-
-crsr = connAdaptor.cursor()
-crsr.fast_executemany = True
-
-sql = "INSERT INTO WholesaleCountry (WholesaleCountryID, CountryID, ISO2, ISO3, Latitude, Longtitude, NameEN, WholesaleID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-# val = df_inner[['ACTCountryID', 'ISO2', 'ISO3', 'AgodaLatitude', 'AgodaLongtitude', 'AgodaNameEN', 'WholeSaleId']]
-
-# Drop rows with any empty cells
-print(dataframeMappingCountry.shape[0])
-dataframeMappingCountry = dataframeMappingCountry[pd.notnull(dataframeMappingCountry['AgodaCountryID'])]
-print(dataframeMappingCountry.shape[0])
-# writer = ExcelWriter('Pandas-Example2.xlsx')
-# dataframeMappingCountry.to_excel(writer,'Sheet1',index=False)
-# writer.save()
-dataframeMappingCountry = dataframeMappingCountry.fillna(value=0)
-val = []
-for label, row in dataframeMappingCountry.iterrows():
-    val.append((
-        row["AgodaCountryID"],
-        row["ACTCountryID"],
-        row["AgodaISO2"],
-        row["AgodaISO3"],
-        row["AgodaLatitude"],
-        row["AgodaLongtitude"],
-        row["AgodaNameEN"],
-        agoda_wholesale_id
-    ))
-
-crsr.executemany(sql, val)
-connAdaptor.commit()
-print(crsr.rowcount, "was inserted. (Countries)")
-crsr.close()
-connAdaptor.close()
-
-
-exit()
+#   DELETE FROM [adaptor].[dbo].[WholesaleCountry]
+#   DELETE FROM [act].[dbo].[Destination] WHERE CreatedAt > CONVERT(DATETIME, '2019-09-18')
+#   DELETE FROM [adaptor].[dbo].[WholesaleDestination]
+#   DELETE FROM [adaptor].[dbo].[WholesaleFacility]
+#   DELETE FROM [adaptor].[dbo].[WholesaleHotel]
+#   DELETE FROM [adaptor].[dbo].[WholesaleRoomType]
+#   DELETE FROM [adaptor].[dbo].[WholesaleRoomTypeImage]
