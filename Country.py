@@ -6,11 +6,11 @@ from ConnectorUtility import get_adaptor_connection
 class Country:
     def run(self):
         # File configuration
-        country_mapping_result_path = 'country_mapping_result.csv'
+        country_mapping_result_path = 'resources/country_mapping_final_data.xlsx'
         agoda_wholesale_id = 2
 
         print("Welcome to the show!")
-        dataframeMappingCountry = pd.read_csv(country_mapping_result_path, encoding='utf-8')
+        dataframeMappingCountry = pd.read_excel(country_mapping_result_path, sheet_name='in')
 
         sql = "INSERT INTO WholesaleCountry (WholesaleCountryID, CountryID, ISO2, ISO3, Latitude, Longtitude, NameEN, WholesaleID) " \
               "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"

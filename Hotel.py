@@ -9,11 +9,11 @@ from ConnectorUtility import get_adaptor_connection
 class Hotel:
     def run(self):
         # File configuration
-        hotel_mapping_result_path = 'hotel_mapping_v2.csv'
+        hotel_mapping_result_path = 'resources/Hotel Mapping Thai only.xlsx'
         agoda_wholesale_id = 2
 
         print("Welcome to the show!")
-        dataframeMappingHotel = pd.read_csv(hotel_mapping_result_path, encoding='utf-8', low_memory=False)
+        dataframeMappingHotel = pd.read_excel(hotel_mapping_result_path, sheet_name='Hotel List')
 
         print("found mapping %r " % dataframeMappingHotel.shape[0])
         dataframeMappingHotel = dataframeMappingHotel[pd.notnull(dataframeMappingHotel['AgodaHotelID'])]

@@ -12,14 +12,14 @@ from ConnectorUtility import get_act_connection, get_adaptor_connection
 class Destination:
     def run(self):
         # File configuration
-        destination_mapping_result_path = 'destination_mapping_result.csv'
+        destination_mapping_result_path = 'resources/destination_mapping_result_v3.xlsx'
         agoda_wholesale_id = 2
         defautTimezone = 13
         insertDateTime = datetime.datetime.now()
 
         print("Welcome to the show!")
         # remove duplicate 21237
-        dataframeMappingDestination = pd.read_csv(destination_mapping_result_path, encoding='utf-8', low_memory=False)
+        dataframeMappingDestination = pd.read_excel(destination_mapping_result_path, sheet_name='Sheet1')
 
         connAct = get_act_connection()
         connAdaptor = get_adaptor_connection()
@@ -50,8 +50,8 @@ class Destination:
             ))
         sql = "INSERT INTO Destination (CountryID, TitleEN, TitleTH, TimeZoneHour, Keywords, Active, CreatedAt, UpdatedAt) " \
               "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-        # cursorAct.executemany(sql, val)
-        # connAct.commit()
+        cursorAct.executemany(sql, val)
+        connAct.commit()
 
         selectDestinationSql = "SELECT DestinationID, CountryID as ACTCountryID, TitleEN as AgodaDestinationNameEN FROM Destination WHERE CreatedAt > ?"
         today = datetime.date.today()
@@ -114,7 +114,7 @@ class Destination:
 
     def export_excel(self, dataframeMappingDestination):
         print('Start export_excel...')
-        writer = ExcelWriter('MapDestination.xlsx')
+        writer = ExcelWriter('resources/ResultMapDestination.xlsx')
         dataframeMappingDestination.to_excel(writer, 'Map Result', index=False)
         writer.save()
         print('End export_excel')

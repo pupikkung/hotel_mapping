@@ -6,11 +6,11 @@ from ConnectorUtility import get_adaptor_connection
 class Facility:
     def run(self):
         # File configuration
-        facility_mapping_result_path = 'Facility_Mapping.csv'
+        facility_mapping_result_path = 'resources/Astra Hotel Facilities Group.xlsx'
         agoda_wholesale_id = 2
 
         print("Welcome to the show!")
-        dataframeMappingFacility = pd.read_csv(facility_mapping_result_path, encoding='utf-8', low_memory=False)
+        dataframeMappingFacility = pd.read_excel(facility_mapping_result_path, sheet_name='ACT Facilities')
 
         print("found mapping %r " % dataframeMappingFacility.shape[0])
         dataframeMappingFacility = dataframeMappingFacility.dropna()

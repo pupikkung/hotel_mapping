@@ -15,11 +15,13 @@ class RoomType:
 
         print("Welcome to the show!")
         connAdaptor = get_adaptor_connection()
-        SQL_Query = pd.read_sql_query('''select top (10) WholesaleHotelID from WholesaleHotel''', connAdaptor)
+        SQL_Query = pd.read_sql_query('''select top (1) WholesaleHotelID from WholesaleHotel''',
+                                      connAdaptor)
         dataframeHotel = pd.DataFrame(SQL_Query, columns=['WholesaleHotelID'])
 
         all_hotel_feed_df = pd.DataFrame(
-            {'hotel_id': [], 'remark': [], 'infant_age': [], 'children_age_from': [], 'children_age_to': [], 'children_stay_free': [],
+            {'hotel_id': [], 'remark': [], 'infant_age': [], 'children_age_from': [], 'children_age_to': [],
+             'children_stay_free': [],
              'min_guest_age': []})
 
         wholesale_roomtype_array = []
@@ -27,14 +29,17 @@ class RoomType:
 
         for label, row in dataframeHotel.iterrows():
             print('WholesaleHotel Id %r' % row["WholesaleHotelID"])
-            hotel_feed_df, wholesale_roomtype, wholesale_roomtype_image = self.get_feed(row["WholesaleHotelID"], agoda_wholesale_id)
+            hotel_feed_df, wholesale_roomtype, wholesale_roomtype_image = self.get_feed(row["WholesaleHotelID"],
+                                                                                        agoda_wholesale_id)
             all_hotel_feed_df = all_hotel_feed_df.append(hotel_feed_df, ignore_index=True)
             if not wholesale_roomtype_array:
                 wholesale_roomtype_array = wholesale_roomtype
                 # wholesale_roomtype_image_array = wholesale_roomtype_image
-            else:
+            elif len(wholesale_roomtype) > 0:
                 numpy.append(wholesale_roomtype_array, wholesale_roomtype, axis=0)
                 # numpy.append(wholesale_roomtype_image_array, wholesale_roomtype_image, axis=0)
+            else:
+                print('Content of hotel Id %r not found' % row["WholesaleHotelID"])
 
         self.insert_roomtype(wholesale_roomtype_array, connAdaptor)
         # self.insert_roomtype_image(wholesale_roomtype_image_array, connAdaptor)
@@ -43,8 +48,8 @@ class RoomType:
 
     def insert_roomtype(self, wholesale_roomtype_array, conn):
         print('Start insert_roomtype...')
-        sql = "INSERT INTO WholesaleRoomType (WholesaleRoomTypeID, BedType, Image, NumberOfRoom, RoomSize, RoomView, BedType, WholesaleID, WholesaleHotelID) " \
-               "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        sql = "INSERT INTO WholesaleRoomType (WholesaleRoomTypeID, BedType, Image, NumberOfRoom, RoomSize, RoomView, WholesaleID, WholesaleHotelID) " \
+              "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
         cursorAdaptor = conn.cursor()
         cursorAdaptor.fast_executemany = True
 
@@ -56,7 +61,7 @@ class RoomType:
     def insert_roomtype_image(self, wholesale_roomtype_image_array, conn):
         print('Start insert_roomtype...')
         sql = "INSERT INTO WholesaleRoomTypeImage (WholesaleRoomTypeID, WholesaleID, Image) " \
-               "VALUES (?, ?, ?)"
+              "VALUES (?, ?, ?)"
         cursorAdaptor = conn.cursor()
         cursorAdaptor.fast_executemany = True
 
@@ -73,7 +78,8 @@ class RoomType:
         xmldoc = parse(var_url)
 
         hotel_feed_df = pd.DataFrame(
-            {'hotel_id': [], 'remark': [], 'infant_age': [], 'children_age_from': [], 'children_age_to': [], 'children_stay_free': [],
+            {'hotel_id': [], 'remark': [], 'infant_age': [], 'children_age_from': [], 'children_age_to': [],
+             'children_stay_free': [],
              'min_guest_age': []})
         for itemHotel in xmldoc.iterfind('.//hotel'):
             hotel_id = itemHotel.findtext('hotel_id')
@@ -84,7 +90,8 @@ class RoomType:
             children_stay_free = itemHotel.findtext('.//children_stay_free')
             min_guest_age = itemHotel.findtext('.//min_guest_age')
             hotel_feed_df = hotel_feed_df.append(
-                {'hotel_id': hotel_id, 'remark': remark, 'infant_age': infant_age, 'children_age_from': children_age_from,
+                {'hotel_id': hotel_id, 'remark': remark, 'infant_age': infant_age,
+                 'children_age_from': children_age_from,
                  'children_age_to': children_age_to, 'children_stay_free': children_stay_free,
                  'min_guest_age': min_guest_age}, ignore_index=True)
 
