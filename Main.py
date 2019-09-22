@@ -11,7 +11,7 @@ from RoomType import RoomType
 
 if __name__ == '__main__':
     start_time = time.time()
-    Country().run()
+    # Country().run()
     # Destination().run()
     # Facility().run()
 
